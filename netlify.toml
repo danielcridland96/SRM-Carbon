@@ -1,25 +1,19 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback — all routes serve index.html
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
-    # Force HTTPS for 1 year, include subdomains, eligible for browser preload list
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-
-    # Prevent this site being embedded in iframes (clickjacking protection)
     X-Frame-Options = "DENY"
-
-    # Prevent browsers from MIME-sniffing a response away from the declared content-type
     X-Content-Type-Options = "nosniff"
-
-    # Only send the origin when navigating cross-origin; full URL within the same origin
     Referrer-Policy = "strict-origin-when-cross-origin"
-
-    # Disable browser features not used by this app
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
-
-    # Content Security Policy — whitelisted to only the resources this app actually uses:
-    #   scripts  : self + jsDelivr CDN (supabase-js, emailjs)
-    #   styles   : self + Google Fonts CSS + inline styles
-    #   fonts    : self + Google Fonts files
-    #   connects : postcodes.io API + any Supabase project + EmailJS API
-    #   images   : self + data: URIs (used for SVG dropdown arrows)
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.postcodes.io https://*.supabase.co https://api.emailjs.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.postcodes.io https://*.supabase.co https://api.emailjs.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
