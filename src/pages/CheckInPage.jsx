@@ -80,7 +80,7 @@ export default function CheckInPage() {
       co2_kg:         carbon?.co2 ?? null,
     };
 
-    if (sb) { try { await sb.from('visitor_logs').insert(rec); } catch (e) { console.error('DB:', e); } }
+    if (sb) { try { await sb.from('visitor_logs').insert(rec); } catch (e) { if (import.meta.env.DEV) console.error('DB:', e); } }
     await sendCheckinEmail({
       ...rec,
       distance_km: rec.distance_km?.toFixed(1),
@@ -215,6 +215,7 @@ export default function CheckInPage() {
 
       {showAdmin && (
         <AdminModal
+          sb={sb}
           offices={offices}
           activeName={officeName}
           onOfficeChange={name => { setOfficeName(name); setCarbon(null); }}

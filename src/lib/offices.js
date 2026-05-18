@@ -12,7 +12,20 @@ export const DEFAULT_OFFICES = {
 export function loadOffices() {
   try {
     const saved = localStorage.getItem('srm_offices');
-    return saved ? JSON.parse(saved) : DEFAULT_OFFICES;
+    if (!saved) return DEFAULT_OFFICES;
+    const parsed = JSON.parse(saved);
+    if (typeof parsed !== 'object' || Array.isArray(parsed)) return DEFAULT_OFFICES;
+    const validated = {};
+    for (const [name, val] of Object.entries(parsed)) {
+      if (typeof name === 'string' && name.length <= 100 &&
+          typeof val?.address === 'string' && typeof val?.postcode === 'string') {
+        validated[name] = {
+          address:  val.address.slice(0, 200),
+          postcode: val.postcode.replace(/[^A-Z0-9 ]/gi, '').slice(0, 10),
+        };
+      }
+    }
+    return Object.keys(validated).length ? validated : DEFAULT_OFFICES;
   } catch {
     return DEFAULT_OFFICES;
   }

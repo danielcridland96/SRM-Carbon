@@ -23,6 +23,6 @@ export async function sendCheckinEmail(params, officeName) {
     emailjs.init({ publicKey: key });
     await emailjs.send(svc, tpl, { ...params, to_email: to });
   } catch (e) {
-    console.error('EmailJS:', e);
+    if (import.meta.env.DEV) console.error('EmailJS:', e);
   }
 }

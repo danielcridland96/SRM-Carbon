@@ -8,9 +8,17 @@ export const EMISSION_FACTORS = {
 };
 
 export async function getLatLng(postcode) {
-  const r = await fetch(`https://api.postcodes.io/postcodes/${postcode.replace(/\s/g, '').toUpperCase()}`);
-  const d = await r.json();
-  return d.status === 200 ? { lat: d.result.latitude, lng: d.result.longitude } : null;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const r = await fetch(`https://api.postcodes.io/postcodes/${postcode.replace(/\s/g, '').toUpperCase()}`, { signal: controller.signal });
+    clearTimeout(timer);
+    const d = await r.json();
+    if (d.status !== 200 || typeof d.result?.latitude !== 'number') return null;
+    return { lat: d.result.latitude, lng: d.result.longitude };
+  } catch {
+    return null;
+  }
 }
 
 export function haversineKm(a, b) {

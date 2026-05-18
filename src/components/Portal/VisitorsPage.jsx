@@ -41,6 +41,7 @@ export default function VisitorsPage({ sb, role, office }) {
     setLoading(true);
     let q = sb.from('visitor_logs').select('*').order('created_at', { ascending: false });
     if (isRecp) q = q.eq('visit_date', TODAY);
+    if (!isAdmin && office) q = q.eq('office_name', office);
     if (dateFrom) q = q.gte('visit_date', dateFrom);
     if (dateTo)   q = q.lte('visit_date', dateTo);
     const { data, error } = await q;
@@ -50,13 +51,21 @@ export default function VisitorsPage({ sb, role, office }) {
 
   function applyFilter() { load(from, to); }
 
+  function csvCell(value) {
+    if (value === null || value === undefined) return '""';
+    const str = String(value);
+    const safe = /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+    return `"${safe.replace(/"/g, '""')}"`;
+  }
+
   function exportCsv() {
     if (!rows.length) return;
     const cols = ['Date','Time','Visitor','Company','Host','Purpose','Office','Transport','Distance (km)','CO2 (kg)'];
     const lines = [cols.join(','), ...rows.map(r => [
-      r.visit_date, r.arrival_time, `"${r.visitor_name}"`, `"${r.company||''}"`,
-      `"${r.host}"`, r.purpose||'', r.office_name, r.transport_mode||'',
-      r.distance_km||'', r.co2_kg||''
+      csvCell(r.visit_date), csvCell(r.arrival_time), csvCell(r.visitor_name),
+      csvCell(r.company), csvCell(r.host), csvCell(r.purpose),
+      csvCell(r.office_name), csvCell(r.transport_mode),
+      csvCell(r.distance_km), csvCell(r.co2_kg),
     ].join(','))];
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }));
