@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRM Staff Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--forest:#1a3a2a;--moss:#2d5a3d;--fern:#4a7c59;--sage:#8aaf8a;--mint:#c5dfc5;--cream:#f5f2ec;--sand:#e8e0d0;--ember:#c4571a;--text:#1a2a1a;--muted:#6b7f6b;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── Top bar ── */
+.topbar{background:var(--forest);height:60px;display:flex;align-items:center;padding:0 28px;gap:16px;flex-shrink:0;}
+.topbar-brand{font-family:'DM Serif Display',serif;font-size:20px;color:white;}
+.topbar-brand small{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--sage);font-weight:400;margin-left:8px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.topbar-user{font-size:12px;color:var(--sage);}
+.topbar-btn{background:rgba(255,255,255,.1);border:none;color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:background .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.topbar-btn:hover{background:rgba(255,255,255,.2);}
+.topbar-pill{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px;}
+.pill-admin{background:rgba(197,223,197,.2);color:var(--mint);}
+.pill-manager{background:rgba(138,175,138,.15);color:var(--sage);}
+.pill-receptionist{background:rgba(138,175,138,.1);color:var(--sage);}
+
+/* ── Main layout ── */
+.main{flex:1;display:flex;overflow:hidden;}
+.sidebar{width:220px;background:white;border-right:1px solid var(--sand);display:flex;flex-direction:column;padding:20px 0;flex-shrink:0;}
+.sidebar-section{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 20px;margin:16px 0 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;border-left:3px solid transparent;text-decoration:none;}
+.nav-item:hover{background:rgba(74,124,89,.06);color:var(--fern);}
+.nav-item.active{background:rgba(74,124,89,.08);color:var(--forest);border-left-color:var(--fern);font-weight:600;}
+.nav-item .nav-icon{font-size:16px;width:20px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid var(--sand);}
+.back-link{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);text-decoration:none;padding:8px 0;transition:color .15s;}
+.back-link:hover{color:var(--fern);}
+
+.content{flex:1;overflow-y:auto;padding:28px 32px;}
+
+/* ── Login ── */
+.login-page{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:white;border-radius:20px;padding:40px;width:100%;max-width:420px;box-shadow:0 4px 48px rgba(26,58,42,.1);}
+.login-card h2{font-family:'DM Serif Display',serif;font-size:28px;color:var(--forest);margin-bottom:6px;}
+.login-card p{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+
+/* ── Form fields ── */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.field label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.field input,.field select{font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:var(--cream);border:1.5px solid var(--sand);border-radius:10px;padding:11px 14px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;-webkit-appearance:none;}
+.field input:focus,.field select:focus{border-color:var(--fern);background:white;box-shadow:0 0 0 3px rgba(74,124,89,.1);}
+.field select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7f6b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.hint{font-size:11px;color:#9aaa9a;margin-top:2px;}
+.err-msg{font-size:12px;color:var(--ember);margin-top:4px;display:none;}
+.err-msg.show{display:block;}
+
+/* ── Buttons ── */
+.btn{width:100%;background:var(--forest);color:white;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn:hover{background:var(--moss);}
+.btn:disabled{opacity:.6;pointer-events:none;}
+.btn-sm{background:var(--forest);color:white;border:none;border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-sm:hover{background:var(--moss);}
+.btn-outline{background:transparent;color:var(--fern);border:1.5px solid var(--fern);border-radius:8px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-outline:hover{background:var(--fern);color:white;}
+.btn-danger{background:transparent;color:var(--ember);border:1.5px solid var(--ember);border-radius:8px;padding:7px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-danger:hover{background:var(--ember);color:white;}
+
+/* ── Alerts ── */
+.alert{border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:16px;display:none;}
+.alert.show{display:block;}
+.alert-success{background:rgba(74,124,89,.1);color:var(--fern);border:1px solid rgba(74,124,89,.2);}
+.alert-error{background:rgba(196,87,26,.08);color:var(--ember);border:1px solid rgba(196,87,26,.2);}
+.alert-info{background:rgba(26,58,42,.06);color:var(--forest);border:1px solid rgba(26,58,42,.12);}
+
+/* ── Stats ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:24px;}
+.stat{background:white;border-radius:14px;padding:18px 20px;border:1px solid var(--sand);}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.stat-value{font-family:'DM Serif Display',serif;font-size:30px;color:var(--forest);line-height:1;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── Tables ── */
+.table-wrap{background:white;border-radius:14px;border:1px solid var(--sand);overflow:hidden;margin-bottom:24px;}
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--sand);gap:12px;flex-wrap:wrap;}
+.table-title{font-size:14px;font-weight:600;color:var(--forest);}
+.tbl-filter{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--sand);border-radius:8px;padding:6px 10px;background:var(--cream);color:var(--text);outline:none;}
+.tbl-filter:focus{border-color:var(--fern);}
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 16px;text-align:left;background:var(--cream);border-bottom:1px solid var(--sand);white-space:nowrap;}
+td{font-size:13px;padding:11px 16px;border-bottom:1px solid rgba(232,224,208,.5);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(197,223,197,.06);}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px;}
+
+/* ── Pills ── */
+.co2-pill{display:inline-flex;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;}
+.co2-low{background:rgba(74,124,89,.12);color:var(--fern);}
+.co2-med{background:rgba(212,160,53,.15);color:#906818;}
+.co2-high{background:rgba(196,87,26,.12);color:var(--ember);}
+.role-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+.role-admin{background:rgba(26,58,42,.12);color:var(--forest);}
+.role-manager{background:rgba(74,124,89,.12);color:var(--fern);}
+.role-receptionist{background:rgba(138,175,138,.2);color:var(--moss);}
+
+/* ── User management ── */
+.user-card{background:white;border:1px solid var(--sand);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.user-avatar{width:38px;height:38px;background:var(--mint);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--forest);flex-shrink:0;}
+.user-info{flex:1;}
+.user-name{font-size:14px;font-weight:600;}
+.user-email-sub{font-size:12px;color:var(--muted);}
+.user-meta{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+
+/* ── Create user panel ── */
+.create-panel{background:white;border-radius:16px;border:2px solid var(--mint);padding:24px 28px;margin-bottom:24px;display:none;}
+.create-panel.open{display:block;}
+.create-panel h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--forest);margin-bottom:4px;}
+.create-panel p{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.create-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+/* ── Report bars ── */
+.report-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.report-label{font-size:13px;font-weight:500;min-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.report-track{flex:1;background:var(--sand);border-radius:999px;height:10px;overflow:hidden;}
+.report-fill{height:100%;background:linear-gradient(90deg,var(--fern),var(--sage));border-radius:999px;transition:width .6s ease;}
+.report-val{font-size:12px;color:var(--muted);min-width:100px;text-align:right;}
+
+/* ── Page title ── */
+.page-header{margin-bottom:24px;}
+.page-header h2{font-family:'DM Serif Display',serif;font-size:26px;color:var(--forest);margin-bottom:4px;}
+.page-header p{font-size:13px;color:var(--muted);}
+
+/* ── Info box ── */
+.info-box{margin-top:8px;padding:14px 16px;background:var(--cream);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.8;}
+.info-box strong{color:var(--forest);}
+code{background:rgba(26,58,42,.08);padding:1px 5px;border-radius:4px;font-size:11px;font-family:monospace;}
+
+/* ── Access badge ── */
+.access-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);background:var(--cream);border:1px solid var(--sand);border-radius:6px;padding:3px 8px;margin-bottom:16px;}
+
+/* ── No DB warning ── */
+.no-db{max-width:480px;margin:60px auto;text-align:center;padding:20px;}
+.no-db h3{font-family:'DM Serif Display',serif;font-size:24px;color:var(--forest);margin-bottom:10px;}
+.no-db p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
+
+@media(max-width:700px){
+  .sidebar{display:none;}
+  .content{padding:16px;}
+  .create-grid{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  td,th{padding:8px 10px;font-size:12px;}
+  .topbar{padding:0 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar (always visible) -->
+<div class="topbar">
+  <div class="topbar-brand">SRM Staff Portal <small id="topOfficeName"></small></div>
+  <div class="topbar-right">
+    <span class="topbar-user" id="topUserEmail"></span>
+    <span class="topbar-pill" id="topRolePill" style="display:none"></span>
+    <button class="topbar-btn" id="signOutBtn" onclick="signOut()" style="display:none">Sign Out</button>
+    <a class="topbar-btn" href="index.html">← Check-in Form</a>
+  </div>
+</div>
+
+<!-- Pre-auth: no database configured -->
+<div id="noDbView" style="display:none">
+  <div class="no-db">
+    <div style="font-size:48px;margin-bottom:16px">🗄️</div>
+    <h3>Database not configured</h3>
+    <p>The Supabase database connection hasn't been set up yet. Open the check-in form, tap ⚙️ Device Settings, go to the <strong>Database</strong> tab, and enter your Supabase URL and Anon Key.</p>
+    <a class="topbar-btn" href="index.html" style="display:inline-flex;background:var(--forest);border-radius:10px;padding:12px 24px;font-size:14px;">← Go to Check-in Form</a>
+  </div>
+</div>
+
+<!-- Login -->
+<div id="loginView" class="login-page" style="display:none">
+  <div class="login-card">
+    <h2>Staff Sign In</h2>
+    <p>Access your visitor dashboard and reports. Your view is determined by your assigned role.</p>
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="you@srm.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="alert alert-error" id="loginErr">Sign-in failed. Check your email and password.</div>
+    <button class="btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+    <p style="font-size:11px;color:var(--muted);margin-top:14px;text-align:center;">Staff accounts are created by your system administrator in this portal.</p>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashView" class="main" style="display:none">
+  <nav class="sidebar">
+    <div class="sidebar-section">Dashboard</div>
+    <a class="nav-item active" id="nav-visitors" onclick="showPage('visitors')">
+      <span class="nav-icon">📋</span> Visitors
+    </a>
+    <a class="nav-item" id="nav-carbon" onclick="showPage('carbon')" style="display:none">
+      <span class="nav-icon">🌍</span> Carbon Report
+    </a>
+    <a class="nav-item" id="nav-users" onclick="showPage('users')" style="display:none">
+      <span class="nav-icon">👥</span> Manage Users
+    </a>
+    <div class="sidebar-bottom">
+      <a class="back-link" href="index.html">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Visitor Check-in Form
+      </a>
+    </div>
+  </nav>
+  <div class="content" id="pageContent">
+    <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+const OFFICES = {
+  'Birmingham':'B3 3AS','Bristol':'BS32 4TT','Kettering Plant Dept':'NN15 6JQ',
+  'Kings Langley (HQ)':'WD4 8UD','Knutsford':'WA16 8GS','London':'SW1X 7EP',
+  'Manchester':'M2 3WQ','Newcastle':'NE1 1TH'
+};
+const todayStr = new Date().toISOString().split('T')[0];
+let SB = null, pUser = null, pRole = null, pOffice = null, _rows = [];
+
+function initSB() {
+  const url = localStorage.getItem('srm_sb_url');
+  const key = localStorage.getItem('srm_sb_key');
+  if (url && key) { try { SB = supabase.createClient(url, key); return true; } catch(e){} }
+  return false;
+}
+
+async function boot() {
+  const ok = initSB();
+  if (!ok) { show('noDbView'); return; }
+
+  // Try to restore existing session
+  const { data: { session } } = await SB.auth.getSession();
+  if (session) {
+    pUser = session.user;
+    await loadProfileAndDash();
+  } else {
+    show('loginView');
+  }
+}
+boot();
+
+function show(id) {
+  ['noDbView','loginView','dashView'].forEach(v => {
+    document.getElementById(v).style.display = v===id ? (id==='dashView'?'flex':'block') : 'none';
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const btn   = document.getElementById('loginBtn');
+  const err   = document.getElementById('loginErr');
+  err.classList.remove('show');
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+
+  const { data, error } = await SB.auth.signInWithPassword({ email, password: pass });
+  btn.textContent = 'Sign In'; btn.disabled = false;
+
+  if (error) { err.classList.add('show'); return; }
+  pUser = data.user;
+  await loadProfileAndDash();
+}
+
+async function loadProfileAndDash() {
+  const { data: prof, error } = await SB.from('user_profiles').select('*').eq('id', pUser.id).single();
+  console.log('Auth UID:', pUser.id);
+  console.log('Profile result:', prof);
+  console.log('Profile error:', error);
+  if (error || !prof) {
+    document.getElementById('loginErr').textContent = `Debug: UID=${pUser.id} | ${error?.message || 'no row returned'} (${error?.code || 'no code'})`;
+    document.getElementById('loginErr').classList.add('show');
+    await SB.auth.signOut(); return;
+  }
+  pRole = prof.role; pOffice = prof.office_name;
+
+  // Update topbar
+  document.getElementById('topUserEmail').textContent = pUser.email;
+  document.getElementById('topRolePill').textContent  = pRole;
+  document.getElementById('topRolePill').className    = `topbar-pill pill-${pRole}`;
+  document.getElementById('topRolePill').style.display = 'inline-block';
+  document.getElementById('signOutBtn').style.display  = 'inline-block';
+  document.getElementById('topOfficeName').textContent = pOffice ? `— ${pOffice}` : '— All Offices';
+
+  // Show/hide nav items by role
+  if (pRole === 'manager' || pRole === 'admin') document.getElementById('nav-carbon').style.display = 'flex';
+  if (pRole === 'admin') document.getElementById('nav-users').style.display = 'flex';
+
+  show('dashView');
+  showPage('visitors');
+}
+
+async function signOut() {
+  await SB.auth.signOut();
+  pUser = pRole = pOffice = null; _rows = [];
+  document.getElementById('topUserEmail').textContent = '';
+  document.getElementById('topRolePill').style.display = 'none';
+  document.getElementById('signOutBtn').style.display  = 'none';
+  document.getElementById('nav-carbon').style.display  = 'none';
+  document.getElementById('nav-users').style.display   = 'none';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value  = '';
+  document.getElementById('loginErr').classList.remove('show');
+  show('loginView');
+}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+function showPage(page) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-'+page)?.classList.add('active');
+  ({ visitors: loadVisitors, carbon: loadCarbon, users: loadUsers })[page]?.();
+}
+
+// ══════════════════════════════════════════════════════
+// VISITORS PAGE
+// ══════════════════════════════════════════════════════
+async function loadVisitors() {
+  const c = document.getElementById('pageContent');
+  c.innerHTML = '<div class="loading">Loading visitor records…</div>';
+
+  let q = SB.from('visitor_logs').select('*').order('created_at', { ascending: false });
+  if (pRole === 'receptionist') q = q.eq('visit_date', todayStr);
+  const { data: rows, error } = await q;
+  if (error) { c.innerHTML = `<div class="empty">Error: ${error.message}</div>`; return; }
+  _rows = rows || [];
+
+  const isRecp  = pRole === 'receptionist';
+  const isAdmin = pRole === 'admin';
+  const monthPfx = todayStr.slice(0, 7);
+  const todayCount = _rows.filter(r => r.visit_date === todayStr).length;
+  const monthCount = _rows.filter(r => r.visit_date?.startsWith(monthPfx)).length;
+  const co2s    = _rows.map(r => r.co2_kg).filter(Boolean);
+  const avgCo2  = co2s.length ? (co2s.reduce((a, b) => a + b, 0) / co2s.length).toFixed(2) : '—';
+  const totCo2  = co2s.length ? co2s.reduce((a, b) => a + b, 0).toFixed(2) : '—';
+
+  let stats = `<div class="stats-row">
+    <div class="stat"><div class="stat-label">Today</div><div class="stat-value">${todayCount}</div><div class="stat-sub">check-ins</div></div>
+    <div class="stat"><div class="stat-label">This Month</div><div class="stat-value">${monthCount}</div><div class="stat-sub">visitors</div></div>`;
+  if (!isRecp) stats += `
+    <div class="stat"><div class="stat-label">Avg CO₂/Visit</div><div class="stat-value">${avgCo2}</div><div class="stat-sub">kg CO₂e</div></div>
+    <div class="stat"><div class="stat-label">Total CO₂ MTD</div><div class="stat-value">${totCo2}</div><div class="stat-sub">kg CO₂e</div></div>`;
+  stats += '</div>';
+
+  const badge = isRecp
+    ? `<div class="access-badge">👁 Today's visitors · ${pOffice||'your office'} only</div>`
+    : pRole === 'manager'
+      ? `<div class="access-badge">👁 All dates · ${pOffice||'your office'}</div>`
+      : `<div class="access-badge">👁 All dates · All offices</div>`;
+
+  const thBase = '<th>Date</th><th>Time</th><th>Visitor</th><th>Company</th><th>Visiting</th><th>Purpose</th>';
+  const thExt  = !isRecp ? '<th>Transport</th><th>Distance</th><th>CO₂</th>' : '';
+  const thOff  = isAdmin ? '<th>Office</th>' : '';
+
+  const tbody = buildVisitorRows(_rows, isRecp, isAdmin);
+
+  const filters = isRecp ? '' : `
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input class="tbl-filter" type="date" id="fFrom" value="${monthPfx}-01" onchange="applyDateFilter()">
+      <span style="font-size:12px;color:var(--muted)">to</span>
+      <input class="tbl-filter" type="date" id="fTo" value="${todayStr}" onchange="applyDateFilter()">
+      <button class="btn-sm" onclick="exportCsv()">⬇ CSV</button>
+    </div>`;
+
+  c.innerHTML = `
+    <div class="page-header"><h2>Visitor Log</h2><p>Check-in records${pOffice ? ' for '+pOffice : isAdmin ? ' across all offices' : ''}</p></div>
+    ${stats}${badge}
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <span class="table-title">${_rows.length} record${_rows.length!==1?'s':''}</span>
+        ${filters}
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr>${thBase}${thExt}${thOff}</tr></thead>
+        <tbody id="vtbody">${tbody}</tbody>
+      </table></div>
+    </div>`;
+}
+
+function buildVisitorRows(rows, isRecp, isAdmin) {
+  if (!rows.length) return `<tr><td colspan="10" class="empty">No records found.</td></tr>`;
+  return rows.map(r => {
+    const cls = !r.co2_kg ? '' : r.co2_kg < 1 ? 'co2-low' : r.co2_kg < 5 ? 'co2-med' : 'co2-high';
+    let td = `<td>${r.visit_date||'—'}</td><td>${r.arrival_time||'—'}</td><td><strong>${r.visitor_name}</strong></td><td>${r.company||'—'}</td><td>${r.host}</td><td>${r.purpose||'—'}</td>`;
+    if (!isRecp) td += `<td>${r.transport_mode||'—'}</td><td>${r.distance_km ? r.distance_km+'km' : '—'}</td><td>${r.co2_kg ? `<span class="co2-pill ${cls}">${parseFloat(r.co2_kg).toFixed(2)}kg</span>` : '—'}</td>`;
+    if (isAdmin) td += `<td>${r.office_name}</td>`;
+    return `<tr>${td}</tr>`;
+  }).join('');
+}
+
+async function applyDateFilter() {
+  const from = document.getElementById('fFrom')?.value;
+  const to   = document.getElementById('fTo')?.value;
+  if (!from || !to) return;
+  const { data: rows } = await SB.from('visitor_logs').select('*')
+    .gte('visit_date', from).lte('visit_date', to).order('created_at', { ascending: false });
+  _rows = rows || [];
+  document.getElementById('vtbody').innerHTML = buildVisitorRows(_rows, pRole==='receptionist', pRole==='admin');
+}
+
+function exportCsv() {
+  if (!_rows.length) return;
+  const cols = ['Date','Time','Visitor','Company','Host','Purpose','Office','Transport','Distance (km)','CO2 (kg)'];
+  const lines = [cols.join(','), ..._rows.map(r => [
+    r.visit_date, r.arrival_time, `"${r.visitor_name}"`, `"${r.company||''}"`,
+    `"${r.host}"`, r.purpose||'', r.office_name, r.transport_mode||'',
+    r.distance_km||'', r.co2_kg||''
+  ].join(','))];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }));
+  a.download = `srm-visitors-${todayStr}.csv`; a.click();
+}
+
+// ══════════════════════════════════════════════════════
+// CARBON REPORT
+// ══════════════════════════════════════════════════════
+async function loadCarbon() {
+  const c = document.getElementById('pageContent');
+  c.innerHTML = '<div class="loading">Building report…</div>';
+  const { data: rows } = await SB.from('visitor_logs').select('office_name,transport_mode,co2_kg,visit_date');
+  const total = rows?.length || 0;
+  const co2All = (rows||[]).reduce((a, r) => a + (r.co2_kg||0), 0);
+  const byOff = {};
+  (rows||[]).forEach(r => {
+    const k = r.office_name||'Unknown';
+    if (!byOff[k]) byOff[k] = { total: 0, count: 0 };
+    byOff[k].total += (r.co2_kg||0); byOff[k].count++;
+  });
+  const byMode = {};
+  (rows||[]).forEach(r => { const m = r.transport_mode||'Unknown'; byMode[m] = (byMode[m]||0)+1; });
+  const maxOff = Math.max(...Object.values(byOff).map(o=>o.total), 1);
+
+  const offBars = Object.entries(byOff).sort((a,b)=>b[1].total-a[1].total).map(([o,d])=>`
+    <div class="report-row">
+      <span class="report-label">${o}</span>
+      <div class="report-track"><div class="report-fill" style="width:${(d.total/maxOff*100).toFixed(0)}%"></div></div>
+      <span class="report-val">${d.total.toFixed(1)} kg · ${d.count} visits</span>
+    </div>`).join('') || `<div class="empty">No data yet.</div>`;
+
+  const modeBars = Object.entries(byMode).sort((a,b)=>b[1]-a[1]).map(([m,n])=>`
+    <div class="report-row">
+      <span class="report-label">${m}</span>
+      <div class="report-track"><div class="report-fill" style="width:${(n/Math.max(total,1)*100).toFixed(0)}%"></div></div>
+      <span class="report-val">${n} visits (${(n/Math.max(total,1)*100).toFixed(0)}%)</span>
+    </div>`).join('') || `<div class="empty">No data yet.</div>`;
+
+  c.innerHTML = `
+    <div class="page-header"><h2>Carbon Report</h2><p>Travel emissions from visitor check-ins${pOffice?' for '+pOffice:''}</p></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Total CO₂ All Time</div><div class="stat-value">${co2All.toFixed(1)}</div><div class="stat-sub">kg CO₂e</div></div>
+      <div class="stat"><div class="stat-label">Total Visits</div><div class="stat-value">${total}</div><div class="stat-sub">with travel data</div></div>
+      <div class="stat"><div class="stat-label">Avg CO₂/Visit</div><div class="stat-value">${total ? (co2All/total).toFixed(2) : '—'}</div><div class="stat-sub">kg CO₂e</div></div>
+      <div class="stat"><div class="stat-label">Equivalent Trees</div><div class="stat-value">${(co2All/21).toFixed(0)}</div><div class="stat-sub">to offset (21kg/tree/yr)</div></div>
+    </div>
+    <div class="table-wrap" style="padding:20px 24px 24px">
+      <div class="table-title" style="margin-bottom:16px">CO₂ by Office</div>${offBars}
+    </div>
+    <div class="table-wrap" style="padding:20px 24px 24px">
+      <div class="table-title" style="margin-bottom:16px">Transport Mode Breakdown</div>${modeBars}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// USER MANAGEMENT
+// ══════════════════════════════════════════════════════
+async function loadUsers() {
+  const c = document.getElementById('pageContent');
+  c.innerHTML = '<div class="loading">Loading users…</div>';
+  const { data: users, error } = await SB.from('user_profiles').select('*').order('role');
+  if (error) { c.innerHTML = `<div class="empty">Error: ${error.message}</div>`; return; }
+
+  const userCards = (users||[]).map(u => {
+    const initials = (u.full_name||u.email).slice(0,2).toUpperCase();
+    return `<div class="user-card">
+      <div class="user-avatar">${initials}</div>
+      <div class="user-info">
+        <div class="user-name">${u.full_name||'—'}</div>
+        <div class="user-email-sub">${u.email}</div>
+      </div>
+      <div class="user-meta">
+        <span style="font-size:12px;color:var(--muted)">${u.office_name||'All offices'}</span>
+        <span class="role-pill role-${u.role}">${u.role}</span>
+      </div>
+    </div>`;
+  }).join('') || `<div class="empty">No users yet. Add the first one below.</div>`;
+
+  const officeOptions = Object.keys(OFFICES).map(o => `<option value="${o}">${o}</option>`).join('');
+
+  c.innerHTML = `
+    <div class="page-header">
+      <h2>Manage Users</h2>
+      <p>Create staff accounts and assign roles. Each user signs in at <strong>portal.html</strong>.</p>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:13px;font-weight:600;color:var(--forest)">${(users||[]).length} staff account${(users||[]).length!==1?'s':''}</span>
+      <button class="btn-sm" onclick="toggleCreatePanel()">+ Add User</button>
+    </div>
+
+    <div class="create-panel" id="createPanel">
+      <h3>Add New Staff Member</h3>
+      <p>They'll receive a confirmation email if email verification is enabled in your Supabase project. To skip confirmation: Supabase → Authentication → Settings → disable "Enable email confirmations".</p>
+      <div class="alert alert-success" id="createSuccess">✅ User created successfully! They can now sign in.</div>
+      <div class="alert alert-error"   id="createError"></div>
+      <div class="create-grid">
+        <div class="field">
+          <label>Full Name *</label>
+          <input type="text" id="newName" placeholder="Jane Smith">
+        </div>
+        <div class="field">
+          <label>Email Address *</label>
+          <input type="email" id="newEmail" placeholder="jane@srm.com">
+        </div>
+        <div class="field">
+          <label>Password *</label>
+          <input type="password" id="newPass" placeholder="Min 8 characters">
+          <span class="hint">They can change this after first sign-in</span>
+        </div>
+        <div class="field">
+          <label>Role *</label>
+          <select id="newRole">
+            <option value="">Select role…</option>
+            <option value="receptionist">Receptionist — today's visitors, own office</option>
+            <option value="manager">Manager — all dates, own office, carbon data</option>
+            <option value="admin">Admin — all offices, all data, user management</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Office</label>
+          <select id="newOffice">
+            <option value="">All offices (admin)</option>
+            ${officeOptions}
+          </select>
+          <span class="hint">Leave blank for admin accounts</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn-sm" id="createBtn" onclick="createUser()">Create Account</button>
+        <button class="btn-outline" onclick="toggleCreatePanel()">Cancel</button>
+      </div>
+    </div>
+
+    ${userCards}
+
+    <div class="info-box">
+      <strong>Role permissions at a glance:</strong><br>
+      <span class="role-pill role-receptionist">receptionist</span> Today's check-ins only · own office · name, company, host, purpose (no carbon, no postcode)<br>
+      <span class="role-pill role-manager">manager</span> All dates · own office · full data including carbon footprint · CSV export<br>
+      <span class="role-pill role-admin">admin</span> All offices · all data · carbon report · this user management page
+    </div>`;
+}
+
+function toggleCreatePanel() {
+  const p = document.getElementById('createPanel');
+  p.classList.toggle('open');
+  if (p.classList.contains('open')) {
+    document.getElementById('newName').focus();
+    ['createSuccess','createError'].forEach(id => document.getElementById(id).classList.remove('show'));
+  }
+}
+
+async function createUser() {
+  const name   = document.getElementById('newName').value.trim();
+  const email  = document.getElementById('newEmail').value.trim();
+  const pass   = document.getElementById('newPass').value;
+  const role   = document.getElementById('newRole').value;
+  const office = document.getElementById('newOffice').value || null;
+  const errEl  = document.getElementById('createError');
+  const okEl   = document.getElementById('createSuccess');
+  const btn    = document.getElementById('createBtn');
+
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  if (!name || !email || !pass || !role) {
+    errEl.textContent = 'Please fill in all required fields.'; errEl.classList.add('show'); return;
+  }
+  if (pass.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.'; errEl.classList.add('show'); return;
+  }
+  if (role !== 'admin' && !office) {
+    errEl.textContent = 'Please select an office for this role (only admins can have all offices).'; errEl.classList.add('show'); return;
+  }
+
+  btn.textContent = 'Creating…'; btn.disabled = true;
+
+  // Step 1: create auth user
+  const { data: signUpData, error: signUpErr } = await SB.auth.signUp({
+    email, password: pass,
+    options: { data: { full_name: name } }
+  });
+
+  if (signUpErr) {
+    errEl.textContent = signUpErr.message; errEl.classList.add('show');
+    btn.textContent = 'Create Account'; btn.disabled = false; return;
+  }
+
+  const uid = signUpData.user?.id;
+  if (!uid) {
+    errEl.textContent = 'Could not retrieve user ID. The email may already be in use.'; errEl.classList.add('show');
+    btn.textContent = 'Create Account'; btn.disabled = false; return;
+  }
+
+  // Step 2: insert profile with role
+  const { error: profileErr } = await SB.from('user_profiles').insert({
+    id: uid, email, full_name: name, role, office_name: office
+  });
+
+  btn.textContent = 'Create Account'; btn.disabled = false;
+
+  if (profileErr) {
+    errEl.textContent = 'Account created but profile save failed: ' + profileErr.message; errEl.classList.add('show'); return;
+  }
+
+  // Success — reset form and refresh list
+  okEl.classList.add('show');
+  ['newName','newEmail','newPass'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newRole').value = '';
+  document.getElementById('newOffice').value = '';
+  setTimeout(() => loadUsers(), 2000);
+}
+</script>
+</body>
+</html>
