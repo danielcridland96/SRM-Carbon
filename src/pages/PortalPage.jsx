@@ -25,7 +25,8 @@ export default function PortalPage() {
 
   async function loadProfile(u) {
     const { data: prof, error } = await sb.from('user_profiles').select('*').eq('id', u.id).single();
-    if (error || !prof) { await sb.auth.signOut(); return; }
+    if (error) { await sb.auth.signOut(); setLoginErr(`Profile error: ${error.message} (${error.code})`); return; }
+    if (!prof)  { await sb.auth.signOut(); setLoginErr('No staff profile found for this account. Ask your admin to add you in Supabase.'); return; }
     setUser(u); setRole(prof.role); setOffice(prof.office_name);
   }
 
@@ -33,7 +34,7 @@ export default function PortalPage() {
     setLoginErr(''); setSigningIn(true);
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     setSigningIn(false);
-    if (error) { setLoginErr('Sign-in failed. Check your email and password.'); return; }
+    if (error) { setLoginErr(`Sign-in failed: ${error.message}`); return; }
     await loadProfile(data.user);
   }
 
