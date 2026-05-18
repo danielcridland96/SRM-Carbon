@@ -1,6 +1,8 @@
 [build]
   command = "npm audit --audit-level=critical; npm run build"
   publish = "dist"
+  # Skip build when only .md files changed — exits 0 (no diff) = ignore, exits 1 (diff) = build
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!*.md'"
 
 # SPA fallback — all routes serve index.html
 [[redirects]]
