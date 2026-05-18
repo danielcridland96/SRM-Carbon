@@ -1,21 +1,63 @@
 [build]
-  command = "npm audit --audit-level=critical; npm run build"
-  publish = "dist"
-  # Skip build when only .md files changed — exits 0 (no diff) = ignore, exits 1 (diff) = build
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!*.md'"
+  command   = "npm audit --audit-level=critical; npm run build"
+  publish   = "dist"
+  # Skip the build entirely when only .md files changed — exits 0 = skip, 1 = build
+  ignore    = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!*.md'"
 
-# SPA fallback — all routes serve index.html
+# ─── SPA fallback — all unknown paths serve index.html ───────────────────────
+# Required for React Router BrowserRouter: refreshing /portal or any deep link
+# would return a 404 from Netlify without this redirect rule.
 [[redirects]]
-  from = "/*"
-  to   = "/index.html"
+  from   = "/*"
+  to     = "/index.html"
   status = 200
 
+# ─── Security headers — applied to every response ────────────────────────────
 [[headers]]
   for = "/*"
   [headers.values]
+    # Force HTTPS for 1 year; include subdomains; submit to browser preload lists
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+    # Prevent this page being embedded in an <iframe> (clickjacking protection)
     X-Frame-Options = "DENY"
+
+    # Stop browsers from MIME-sniffing a response away from the declared content-type
     X-Content-Type-Options = "nosniff"
+
+    # Only send the origin (no path) as the Referer header to third-party requests
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Disable browser features that this app never uses
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+
+    # CSP — whitelists only the origins this app communicates with.
+    # NOTE: unsafe-inline is present for scripts/styles because Vite inlines some
+    # styles and the EmailJS SDK uses inline event handlers. Removing it requires
+    # nonce-based CSP via a Netlify Edge Function — tracked in TODO.md.
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.postcodes.io https://*.supabase.co https://api.emailjs.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
+
+# ─── Cache headers for hashed static assets ──────────────────────────────────
+# Vite appends a content hash to all JS/CSS filenames (e.g. vendor-react-BXk9mAFp.js).
+# These files are immutable — if the content changes, the filename changes too.
+# max-age=31536000 + immutable tells browsers and CDNs to cache them for 1 year
+# without any revalidation requests.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# index.html must never be cached — it's the entry point that references the
+# hashed asset filenames. If it were cached, users would keep loading old
+# JS/CSS chunks after a deploy.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# SVG/image assets in /public are not hashed by Vite — cache for 1 hour,
+# with revalidation, so changes propagate reasonably quickly.
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
