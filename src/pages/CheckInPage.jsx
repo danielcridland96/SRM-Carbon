@@ -219,7 +219,6 @@ export default function CheckInPage() {
           activeName={officeName}
           onOfficeChange={name => { setOfficeName(name); setCarbon(null); }}
           onOfficesChange={updated => setOffices(updated)}
-          onDbChange={client => setSb(client)}
           onClose={() => setShowAdmin(false)}
         />
       )}

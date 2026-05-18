@@ -2,13 +2,11 @@ import { useState } from 'react';
 import TabOffice from './TabOffice';
 import TabOffices from './TabOffices';
 import TabEmail from './TabEmail';
-import TabDb from './TabDb';
-
 const ADMIN_PASSWORD = 'SRM-Admin1';
-const TABS = ['office', 'offices', 'email', 'db'];
-const TAB_LABELS = { office: '🏢 Office', offices: '📍 Offices', email: '✉️ Email', db: '🗄️ DB' };
+const TABS = ['office', 'offices', 'email'];
+const TAB_LABELS = { office: '🏢 Office', offices: '📍 Offices', email: '✉️ Email' };
 
-export default function AdminModal({ offices, activeName, onOfficeChange, onOfficesChange, onDbChange, onClose }) {
+export default function AdminModal({ offices, activeName, onOfficeChange, onOfficesChange, onClose }) {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem('srm_admin_auth') === '1');
   const [pw, setPw] = useState('');
   const [pwErr, setPwErr] = useState(false);
@@ -70,7 +68,6 @@ export default function AdminModal({ offices, activeName, onOfficeChange, onOffi
               {tab === 'office'   && <TabOffice offices={offices} activeName={activeName} onOfficeChange={onOfficeChange} onClose={onClose} />}
               {tab === 'offices'  && <TabOffices onOfficesChange={onOfficesChange} />}
               {tab === 'email'    && <TabEmail activeName={activeName} />}
-              {tab === 'db'       && <TabDb onDbChange={onDbChange} />}
               <button className="modal-btn secondary" onClick={signOut}>Sign Out</button>
             </>
           )}
