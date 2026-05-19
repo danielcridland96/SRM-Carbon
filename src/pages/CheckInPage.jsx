@@ -81,6 +81,9 @@ export default function CheckInPage() {
   // the postcodes.io lookup has resolved
   const [carbon, setCarbon] = useState(null); // { co2: number, distanceKm: number }
 
+  // Countdown state for the success screen auto-reset (15 → 0 then calls reset)
+  const [countdown, setCountdown] = useState(15);
+
   // Debounce timer ref for postcode lookups — avoids an API call per keystroke
   const calcTimer = useRef(null);
 
@@ -113,6 +116,18 @@ export default function CheckInPage() {
 
   // Trigger carbon recalculation whenever postcode, transport, or the active office changes
   useEffect(() => { calcCarbon(fromPostcode, transport); }, [fromPostcode, transport, calcCarbon]);
+
+  // Auto-reset after 15 seconds on the success screen
+  useEffect(() => {
+    if (!submitted) { setCountdown(15); return; }
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(interval); reset(); return 15; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [submitted]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * validate — checks required fields and returns an errors object.
@@ -230,6 +245,9 @@ export default function CheckInPage() {
             <span className="summary-chip">🌍 {summary.co2.toFixed(2)} kg CO₂e</span>
             <span className="summary-chip">{summary.dist.toFixed(1)} km · {summary.label}</span>
           </div>
+          <p style={{ marginTop: 16, fontSize: 13, opacity: 0.55 }}>
+            Returning to the form in {countdown}s…
+          </p>
           <button className="new-entry-btn" onClick={reset}>← Log another visitor</button>
         </div>
       ) : (
