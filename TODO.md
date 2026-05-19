@@ -141,6 +141,8 @@ Items marked ✅ have been implemented.
 - ✅ **Vite production build optimisation** (`vite.config.js`)
   Manual chunk splitting separates vendor libraries from app code so browser
   caches stay valid across deploys that only change app code.
+  `manualChunks` uses the function form (required by Vite 8 / rolldown — object
+  form is no longer accepted).
 
 - ✅ **Cache headers for hashed assets** (`netlify.toml`)
   `/assets/*` → `immutable, 1 year`. `/index.html` → `no-cache`. SVGs + PNGs → 1 hour.

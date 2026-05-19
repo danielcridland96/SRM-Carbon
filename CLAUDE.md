@@ -25,6 +25,7 @@ The app calculates a CO₂ estimate for the journey and stores it alongside the 
 | Postcode lookup | postcodes.io (free UK postcode → lat/lng API) |
 | Hosting | Netlify (auto-deploy from GitHub on push to main) |
 | Font | Source Sans Pro (Google Fonts — SRM brand font, weights 300/400/600/700) |
+| Bundler | Rolldown (Vite 8 default — replaces Rollup; `manualChunks` must be a function) |
 | Repo | github.com/danielcridland96/SRM-Carbon |
 
 ### Brand colours
