@@ -143,7 +143,12 @@ Items marked ✅ have been implemented.
   caches stay valid across deploys that only change app code.
 
 - ✅ **Cache headers for hashed assets** (`netlify.toml`)
-  `/assets/*` → `immutable, 1 year`. `/index.html` → `no-cache`. SVGs → 1 hour.
+  `/assets/*` → `immutable, 1 year`. `/index.html` → `no-cache`. SVGs + PNGs → 1 hour.
+
+- ✅ **SRM branding applied**
+  Font updated to Source Sans Pro (SRM's brand font). SRM logo added to the check-in
+  page header and portal topbar (inverted white in the dark bar). Brand red `#e4032c`
+  added as `--srm-red` CSS variable. Heading style unified (italic `em` removed).
 
 - ✅ **Supabase config tracked in source control** (`supabase/config.toml`)
 

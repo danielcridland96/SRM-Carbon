@@ -24,7 +24,21 @@ The app calculates a CO₂ estimate for the journey and stores it alongside the 
 | Email notifications | EmailJS (browser-side, no backend needed) |
 | Postcode lookup | postcodes.io (free UK postcode → lat/lng API) |
 | Hosting | Netlify (auto-deploy from GitHub on push to main) |
+| Font | Source Sans Pro (Google Fonts — SRM brand font, weights 300/400/600/700) |
 | Repo | github.com/danielcridland96/SRM-Carbon |
+
+### Brand colours
+
+| Variable | Hex | Usage |
+|---|---|---|
+| `--forest` | `#0d6b2f` | Primary green — buttons, headings, banners |
+| `--moss` / `--fern` | `#149a47` | Mid green — hover states, accents |
+| `--sage` | `#6dcc8f` | Light green — secondary text on dark bg |
+| `--mint` | `#b8edca` | Pale green — backgrounds, chips |
+| `--ember` | `#c4571a` | Error / warning orange-red |
+| `--srm-red` | `#e4032c` | SRM brand red — available for future accent use |
+
+The SRM logo (`/public/srm-logo.png`) is displayed in the check-in page header and portal topbar. In the dark green topbar it is inverted to white via `filter: brightness(0) invert(1)`.
 
 ---
 
