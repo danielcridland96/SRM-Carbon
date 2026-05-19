@@ -104,6 +104,10 @@ Items marked ✅ have been implemented.
 - [ ] 🟢 **Export carbon report as PDF or CSV**
   Aggregate carbon data export for ESG/sustainability reporting.
 
+- ✅ **Kiosk auto-reset after check-in**
+  Success screen counts down from 15 seconds and automatically resets the form,
+  ready for the next visitor. Manual "Log another visitor" button still works immediately.
+
 - [ ] 🟢 **Return journey option**
   Checkbox that doubles the CO₂ figure for visitors travelling both ways on the
   same day.

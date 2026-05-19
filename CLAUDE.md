@@ -360,6 +360,8 @@ npm run build          # outputs to dist/
 
 - **No real-time updates** — The visitors table in the portal doesn't auto-refresh. Staff must reload or re-apply the filter to see new check-ins.
 
+- **Kiosk auto-reset** — After a successful check-in, the success screen counts down from 15 seconds and automatically resets the form. The visitor can also tap "← Log another visitor" to reset immediately. The countdown is implemented with `setInterval` in a `useEffect` that fires when `submitted` becomes true, and is cleaned up on unmount or manual reset.
+
 - **LocalStorage for device config** — Office settings, EmailJS credentials, and receptionist emails are stored in the browser's localStorage on each device/terminal. If the browser data is cleared, these must be re-entered via Device Settings. This is intentional — it keeps the configuration on-device for kiosk use.
 
 - **No data deletion UI** — Visitor records cannot be deleted from the portal. This is by design for audit trail purposes. Records can be deleted directly in the Supabase dashboard if required (e.g. for a GDPR erasure request).
