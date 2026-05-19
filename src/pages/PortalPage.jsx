@@ -120,7 +120,10 @@ export default function PortalPage() {
     return (
       <div className="portal-page">
         <div className="portal-topbar">
-          <div className="portal-brand">SRM Staff Portal</div>
+          <div className="portal-brand">
+            <img src="/srm-logo.png" alt="Sir Robert McAlpine" className="srm-logo-topbar" />
+            Staff Portal
+          </div>
           <div className="portal-topbar-right">
             <Link to="/" className="portal-back">← Check-in Form</Link>
           </div>
@@ -142,7 +145,10 @@ export default function PortalPage() {
     return (
       <div className="portal-page">
         <div className="portal-topbar">
-          <div className="portal-brand">SRM Staff Portal</div>
+          <div className="portal-brand">
+            <img src="/srm-logo.png" alt="Sir Robert McAlpine" className="srm-logo-topbar" />
+            Staff Portal
+          </div>
           <div className="portal-topbar-right">
             <Link to="/" className="portal-back">← Check-in Form</Link>
           </div>
@@ -189,7 +195,8 @@ export default function PortalPage() {
     <div className="portal-page">
       <div className="portal-topbar">
         <div className="portal-brand">
-          SRM Staff Portal
+          <img src="/srm-logo.png" alt="Sir Robert McAlpine" className="srm-logo-topbar" />
+          Staff Portal
           {/* Role badge next to the brand name so the user knows their access level */}
           <span className={`role-pill role-${role}`} style={{ fontSize: 11, marginLeft: 4 }}>{role}</span>
         </div>

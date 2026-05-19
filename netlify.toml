@@ -55,9 +55,14 @@
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# SVG/image assets in /public are not hashed by Vite — cache for 1 hour,
+# Static image assets in /public are not hashed by Vite — cache for 1 hour,
 # with revalidation, so changes propagate reasonably quickly.
 [[headers]]
   for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+[[headers]]
+  for = "/*.png"
   [headers.values]
     Cache-Control = "public, max-age=3600, must-revalidate"

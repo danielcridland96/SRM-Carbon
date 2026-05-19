@@ -222,6 +222,7 @@ export default function CheckInPage() {
     <div className="page-wrapper">
       {/* Header section */}
       <div className="header">
+        <img src="/srm-logo.png" alt="Sir Robert McAlpine" className="srm-logo" />
         <div className="logo-badge"><span className="dot" />Visitor Check-In</div>
         <h1>Welcome. <em>Let&apos;s log</em><br />your journey.</h1>
         <p className="subtitle">
