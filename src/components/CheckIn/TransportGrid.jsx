@@ -20,7 +20,7 @@ const OPTIONS = [
   { value: 'car',    icon: '🚗', label: 'Petrol Car' },
   { value: 'diesel', icon: '🚙', label: 'Diesel Car' },
   { value: 'ev',     icon: '⚡', label: 'Electric Car' },
-  { value: 'train',  icon: '🚆', label: 'Train' },
+  { value: 'train',  icon: '🚄', label: 'Train' },
   { value: 'bus',    icon: '🚌', label: 'Bus / Coach' },
   { value: 'bike',   icon: '🚲', label: 'Bike / Walk' },
 ];
