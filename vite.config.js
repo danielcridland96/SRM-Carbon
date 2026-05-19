@@ -27,10 +27,11 @@ export default defineConfig({
          *   vendor-supabase  — Supabase client (changes on SDK upgrades only)
          *   vendor-emailjs   — EmailJS browser client
          */
-        manualChunks: {
-          'vendor-react':    ['react', 'react-dom', 'react-router-dom'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-emailjs':  ['@emailjs/browser'],
+        // Vite 8 (rolldown) requires manualChunks to be a function, not an object
+        manualChunks(id) {
+          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'vendor-react';
+          if (id.includes('@supabase'))  return 'vendor-supabase';
+          if (id.includes('@emailjs'))   return 'vendor-emailjs';
         },
       },
     },
