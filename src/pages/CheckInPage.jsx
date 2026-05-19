@@ -224,7 +224,7 @@ export default function CheckInPage() {
       <div className="header">
         <img src="/srm-logo.png" alt="Sir Robert McAlpine" className="srm-logo" />
         <div className="logo-badge"><span className="dot" />Visitor Check-In</div>
-        <h1>Welcome. <em>Let&apos;s log</em><br />your journey.</h1>
+        <h1>Welcome. Let&apos;s log<br />your journey.</h1>
         <p className="subtitle">
           Please complete this form on arrival. We track travel carbon<br />
           footprints as part of our sustainability commitment.
