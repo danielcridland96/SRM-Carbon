@@ -136,6 +136,47 @@ Items marked ✅ have been implemented.
 
 ---
 
+## Azure Migration (branch: `azure-migration`)
+
+The app has been fully migrated to Azure on the `azure-migration` branch. The following
+steps require **Azure AD admin access** before the branch can be merged to `main`.
+
+- [ ] 🔴 **Create the Azure AD App Registration** (`docs/azure-ad-app-registration.md`)
+  Follow the step-by-step guide. Requires Entra ID admin access on the SRM tenant.
+  Produces: Application (client) ID, client secret, and Directory (tenant) ID.
+
+- [ ] 🔴 **Update `staticwebapp.config.json` with real Tenant ID**
+  Replace `AZURE_TENANT_ID` in `openIdIssuer` with the Directory (tenant) ID from
+  the app registration. Commit to the `azure-migration` branch.
+
+- [ ] 🔴 **Provision Azure infrastructure** (`docs/azure-infrastructure-setup.md`)
+  1. Create resource group: `rg-srm-carbon`
+  2. Create Azure Database for PostgreSQL Flexible Server: `srm-carbon-db`
+  3. Run `database/schema.sql` against the new database
+  4. Insert the first admin row: `INSERT INTO user_profiles (email, full_name, role) VALUES ('daniel.cridland@srm.com', 'Daniel Cridland', 'admin')`
+  5. Create Azure Static Web App: `srm-carbon`
+
+- [ ] 🔴 **Set application settings on the Static Web App**
+  In Azure Portal → Static Web App → Configuration, add:
+  - `AZURE_POSTGRESQL_CONNECTIONSTRING` — from the PostgreSQL server
+  - `AZURE_CLIENT_ID` — from the app registration
+  - `AZURE_CLIENT_SECRET` — from the app registration
+
+- [ ] 🔴 **Add `AZURE_STATIC_WEB_APPS_API_TOKEN` to GitHub Secrets**
+  Azure Portal → Static Web App → Manage deployment token → copy value.
+  GitHub → Settings → Secrets → Actions → New secret.
+  This authorises the GitHub Actions workflow to deploy.
+
+- [ ] 🔴 **Merge `azure-migration` into `main` and verify deployment**
+  Once all settings are in place, merge the branch. GitHub Actions will build and
+  deploy automatically. Verify at the Static Web App URL:
+  1. Check-in form loads and submits correctly
+  2. `/portal` redirects to Microsoft login
+  3. Admin signs in and all portal tabs work
+  4. Device Settings modal signs in via Microsoft
+
+---
+
 ## Code Quality & Maintenance
 
 - ✅ **Vite production build optimisation** (`vite.config.js`)
