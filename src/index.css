@@ -220,6 +220,22 @@ code { background: rgba(26,58,42,.06); padding: 1px 5px; border-radius: 4px; fon
 .no-db h3 { font-family: 'Source Sans Pro', sans-serif; font-weight: 700; font-size: 24px; color: var(--forest); margin-bottom: 10px; }
 .no-db p { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
 
+/* ── View tabs (Charts / Map) ── */
+.view-tabs { display: flex; gap: 4px; background: var(--sand); border-radius: 10px; padding: 4px; margin-bottom: 24px; width: fit-content; }
+.view-tab { background: transparent; border: none; border-radius: 7px; padding: 7px 18px; font-family: 'Source Sans Pro', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all .15s; }
+.view-tab.active { background: white; color: var(--forest); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.view-tab:hover:not(.active) { color: var(--fern); }
+
+/* ── Map ── */
+.map-wrap { margin-bottom: 24px; }
+.map-wrap .leaflet-container { border-radius: 12px; border: 1px solid var(--sand); font-family: 'Source Sans Pro', sans-serif; }
+.map-legend { display: flex; flex-wrap: wrap; gap: 20px; background: white; border: 1px solid var(--sand); border-radius: 12px; padding: 14px 18px; margin-top: 12px; }
+.legend-group { display: flex; flex-direction: column; gap: 5px; }
+.legend-title { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-line { width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+
 /* ── Responsive ── */
 @media (max-width: 800px) {
   .field-grid { grid-template-columns: 1fr; }

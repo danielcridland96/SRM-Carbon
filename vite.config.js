@@ -32,6 +32,7 @@ export default defineConfig({
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'vendor-react';
           if (id.includes('@supabase'))  return 'vendor-supabase';
           if (id.includes('@emailjs'))   return 'vendor-emailjs';
+          if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-leaflet';
         },
       },
     },
