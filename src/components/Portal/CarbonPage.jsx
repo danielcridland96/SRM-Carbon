@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import MapView from './MapView';
+import { api } from '../../lib/api';
 
-export default function CarbonPage({ sb, office }) {
+export default function CarbonPage({ office }) {
   const [data, setData]     = useState(null);
   const [visits, setVisits] = useState([]);
   const [view, setView]     = useState('charts');
 
   useEffect(() => {
-    sb.from('visitor_logs')
-      .select('office_name,transport_mode,co2_kg,visit_date,from_postcode')
-      .then(({ data: rows }) => {
+    api.carbon().then(rows => {
         const r = rows || [];
         setVisits(r);
 

@@ -35,3 +35,4 @@ lerna-debug.log*
 
 # Windows npm cache (can land in cwd if PATH is misconfigured)
 %appdata%*
+local.settings.json

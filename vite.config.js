@@ -30,7 +30,6 @@ export default defineConfig({
         // Vite 8 (rolldown) requires manualChunks to be a function, not an object
         manualChunks(id) {
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'vendor-react';
-          if (id.includes('@supabase'))  return 'vendor-supabase';
           if (id.includes('@emailjs'))   return 'vendor-emailjs';
           if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-leaflet';
         },
